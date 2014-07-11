@@ -1,5 +1,9 @@
 import copy
-
+'''
+Sudoku Solver
+Basic implementation
+There are better ways to do this, but this was just to explore CSPs and OOP Python
+'''
 class Entry:
     '''
     Entry for every square
@@ -26,7 +30,9 @@ def search(grid, mappings, index):
     
     '''
     I could also update mappings after every successful iteration, but the algorithm
-    is already more complex than it needs to be for such a small state problem.
+    is already more complex than it needs to be for such a small state problem (in 
+    other words, I am lazy).  Creating the deepcopy is where most of the time
+    is being wasted.
     '''
     for option in grid[currentEntry].options:
         gridCopy = copy.deepcopy(grid)
@@ -43,32 +49,37 @@ def updateGrid(grid, currentEntry, option):
     row = currentEntry / 9
     col = currentEntry % 9
     offset = (row / 3) * 3 + (col / 3) * 27
-    print row, col
     for j in range(9):
-        '''
-        I think this works
-        '''
-        l1 = grid[row * 9 + j].options
-        l2 = grid[col + 9 * j].options
-        if not l1:
-            for i, n in enumerate(l1):
-                if n == option:
-                    del l1[i]
-            
-        if not l2:
-            for i, n in enumerate(l2):
-                if n == option:
-                    del l2[i]
         
+        delEntries = []
+        l = grid[row * 9 + j].options
+        if l:
+            for n in l:
+                if n == option:
+                    delEntries.append(n)
+        l = [n for n in l if n not in delEntries]
+        grid[row * 9 + j].options = l
+        
+        delEntries = []
+        l = grid[col + 9 * j].options
+        if l:
+            for n in l:
+                if n == option:
+                    delEntries.append(n)
+                    
+        l = [n for n in l if n not in delEntries]
+        grid[col + 9 * j].options = l
+        
+        delEntries = []   
         jRow = j / 3
         jCol = j % 3
-        print jRow * 9 + jCol + offset, offset
-        lb = grid[jRow * 9 + jCol + offset].options
-        if not lb:
-            for i, n in enumerate(lb):
+        l = grid[jRow * 9 + jCol + offset].options
+        if not l:
+            for n in l:
                 if n == option:
-                    del lb[i]
-            
+                    delEntries.append(n)
+        l = [n for n in l if n not in delEntries]  
+        grid[jRow * 9 + jCol + offset].options = l
                     
 def sameRow(i, j): 
     return (i / 9 == j / 9)
